@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>航天一小</title>
+    <script src="./vue.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <script src="./js/echarts.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+</head>
+<style>
+    *{
+        margin: 0;
+        padding: 0;
+    }
+    a{
+        text-decoration: none;
+    }
+    body{
+        background-image: url("img/bgImg.png");
+    }
+    header{
+        height: 7vh;
+        width: 100%;
+        background: linear-gradient(90deg,
+        rgba(10, 75, 114, 0.6) 0%, rgba(21, 120, 180, 0.38) 38%, rgba(25, 140, 210, 0.3) 63%, rgba(30, 171, 255, 0.5) 100%);
+        line-height: 7vh;
+        color: #FFF;
+        font-size: 20px;
+        text-align: center;
+    }
+    header span{
+        padding: 0.5%;
+    }
+    .sideNav{
+        position: relative;
+        float: left;
+        width: 13vw;
+        height: 93vh;
+        background-color: #091C4E;
+        text-align: center;
+        overflow: auto;
+    }
+    .content{
+        float: left;
+        overflow: hidden;
+        width: 85vw;
+        height: 93vh;
+    }
+    .content .side{
+        height: 4.5vh;
+    }
+    .info{
+        position: absolute;
+        left: 50%;
+        margin-left: -1.505vw;
+        margin-top: 10%;
+        width: 3.1vw;
+        height: 7.05vh;
+        background-color: #5daf34;
+        border-radius: 50%;
+        background-image: url("./img/info.png");
+    }
+    .admin{
+        color: #FFF;
+        display: inline-block;
+        margin-top: 10vh;
+    }
+    .el-menu{
+        border: none;
+    }
+    .el-tabs__item{
+        color: #FFF;
+        background-color: #0D5DFF;
+    }
+    .el-tabs__item.is-active{
+        color: #FFF;
+    }
+    .el-tabs--card>.el-tabs__header{
+        border-bottom:none;
+    }
+    .el-tabs--card>.el-tabs__header .el-tabs__nav{
+        border: 1px solid #009FFF;
+    }
+    .el-tabs--card>.el-tabs__header .el-tabs__item.is-active{
+        border-bottom: none;
+    }
+    .main{
+        margin-top: 5vh;
+        width: 86vw;
+        height: 30vh;
+        margin-left: 2.5%;
+    }
+    .temp{
+        float: left;
+        width: 19%;
+        height: 100%;
+    }
+    #temp{
+        width: 100%;
+        height: 100%;
+    }
+    #humidity{
+        width: 100%;
+        height: 100%;
+    }
+    #CO2{
+        width: 100%;
+        height: 100%;
+    }
+    #PM10{
+        width: 100%;
+        height: 100%;
+    }
+    #PM2{
+        width: 100%;
+        height: 100%;
+    }
+    .history{
+        color: #04FDF5;
+        font-size: 18px;
+        padding-left: 4.8vw;
+        display: inline-block;
+        margin-top: 2%;
+    }
+    .table{
+        width: 76.5vw;
+        margin-left: 5.5%;
+        margin-top: 2vh;
+    }
+    .el-table--border{
+        border: 1px solid rgba(0, 159, 255, 0.4);
+    }
+    .el-table td, .el-table th.is-leaf{
+        border: 1px solid rgba(0, 159, 255, 0.4);
+    }
+    .el-table--border th, .el-table__fixed-right-patch{
+        border: 1px solid rgba(0, 159, 255, 0.4);
+    }
+    .span{
+        text-align: center;
+        font-size: 18px;
+        color: #04FDF5;
+        margin-top: -15%;
+    }
+    .el-table, .el-table__expanded-cell{
+        background: none;
+    }
+    .el-table--border::after, .el-table--group::after, .el-table::before{
+        background: none;
+    }
+</style>
+<body>
+    <div id="app">
+        <header>
+            <span>{{year}}</span>
+            <span>{{time}}</span>
+            <span>{{week}}</span>
+        </header>
+        <div class="sideNav">
+            <div class="info"></div>
+            <span class="admin">admin</span>
+            <el-row class="tac">
+                <el-col :span="24">
+                    <el-menu
+                            class="el-menu-vertical-demo"
+                            background-color="#091C4E"
+                            text-color="#9BEAFF"
+                            active-text-color="rgb(13, 93, 255)"
+                            @select="handleSelect"
+                    >
+                        <el-submenu index="1">
+                            <template slot="title">
+                                <span>一年级</span>
+                            </template>
+                            <el-menu-item-group>
+                                <el-menu-item index="1">一年级(1)班</el-menu-item>
+                                <el-menu-item index="2">一年级(2)班</el-menu-item>
+                                <el-menu-item index="3">一年级(3)班</el-menu-item>
+                                <el-menu-item index="4">一年级(4)班</el-menu-item>
+                            </el-menu-item-group>
+                        </el-submenu>
+                        <el-submenu index="2">
+                            <template slot="title">
+                                <span>二年级</span>
+                            </template>
+                            <el-menu-item-group>
+                                <el-menu-item index="5">二年级(1)班</el-menu-item>
+                                <el-menu-item index="6">二年级(2)班</el-menu-item>
+                                <el-menu-item index="7">二年级(3)班</el-menu-item>
+                                <el-menu-item index="8">二年级(4)班</el-menu-item>
+                            </el-menu-item-group>
+                        </el-submenu>
+                    </el-menu>
+                </el-col>
+            </el-row>
+        </div>
+        <div class="content">
+            <div class="side">
+                <el-tabs v-model="editableTabsValue" type="card">
+                    <el-tab-pane
+                            v-for="(item, index) in editableTabs"
+                            :key="item.name"
+                            :label="item.title"
+                            :name="item.name"
+                    >
+                    </el-tab-pane>
+                </el-tabs>
+            </div>
+            <div class="main">
+                <div class="temp">
+                    <div id="temp"></div>
+                    <div class="span">温度:℃</div>
+                </div>
+                <div class="temp">
+                    <div id="humidity"></div>
+                    <div class="span">湿度:%RH</div>
+                </div>
+                <div class="temp">
+                    <div id="CO2"></div>
+                    <div class="span">二氧化碳:ppm</div>
+                </div>
+                <div class="temp">
+                    <div id="PM10"></div>
+                    <div class="span">PM10:μg/m³</div>
+                </div>
+                <div class="temp">
+                    <div id="PM2"></div>
+                    <div class="span">PM2.5:μg/m³</div>
+                </div>
+            </div>
+            <span class="history">历史数据</span>
+            <div class="table">
+                <el-table
+                        :data="tableData"
+                        style="width: 100%"
+                        align="center"
+                        :header-cell-style="{backgroundColor:'rgba(3, 41, 84, 1)',color:'#04FDF5',fontSize:'15px'}"
+                        :cell-style="{color: '#91D9FF',backgroundColor:'transparent',fontSize:'13px'}"
+                        :row-style="{color: '#fff',backgroundColor:'rgba(3, 41, 84, 1)',fontSize:'13px',
+border: '1px solid rgba(0, 159, 255, 0.5019607843137255)'}">
+                    <el-table-column label="设备ID：12546785                 位置：一年级(1)班  前门" align="center">
+                        <el-table-column
+                                prop="time"
+                                label="时间"
+                                width="245"
+                                align="center">
+                        </el-table-column>
+                        <el-table-column
+                                prop="temp"
+                                label="温度:℃"
+                                width="245"
+                                align="center">
+                        </el-table-column>
+                        <el-table-column
+                                prop="humidity"
+                                label="湿度:%RH"
+                                width="245"
+                                align="center">
+                        </el-table-column>
+                        <el-table-column
+                                prop="CO2"
+                                label="二氧化碳:ppm"
+                                width="245"
+                                align="center">
+                        </el-table-column>
+                        <el-table-column
+                                prop="PM10"
+                                label="PM10:μg/m³"
+                                width="245"
+                                align="center">
+                        </el-table-column>
+                        <el-table-column
+                                prop="PM2"
+                                label="PM2.5:μg/m³"
+                                width="240"
+                                align="center">
+                        </el-table-column>
+                    </el-table-column>
+                </el-table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var app=new Vue({
+            el:'#app',
+            data(){
+                return{
+                    year: '',
+                    time: '',
+                    week: '',
+                    editableTabsValue: '1',
+                    editableTabs: [{
+                        title: '一年级(1)班',
+                        name: '1',
+                    }],
+                    tabIndex: 1,
+                    index:null,
+                    arr:[],
+                    newArr:null,
+                    tableData: [{
+                        time: '05.18   15:30',
+                        temp: '25.36',
+                        humidity: '25.45',
+                        CO2: '600.00',
+                        PM10: '23.00',
+                        PM2: '23.00'
+                    },
+                        {
+                            time: '05.18   16:00',
+                            temp: '26.78',
+                            humidity: '36.25',
+                            CO2: '621.12',
+                            PM10: '24.00',
+                            PM2: '24.00'
+                        },
+                        {
+                            time: '05.18   16:30',
+                            temp: '27.35',
+                            humidity: '38.12',
+                            CO2: '651.20',
+                            PM10: '23.00',
+                            PM2: '23.00'
+                        },
+                        {
+                            time: '05.18   17:00',
+                            temp: '28.45',
+                            humidity: '29.24',
+                            CO2: '621.25',
+                            PM10: '24.00',
+                            PM2: '24.00'
+                        },
+                        {
+                            time: '05.18   17:30',
+                            temp: '28.98',
+                            humidity: '28.98',
+                            CO2: '621.54',
+                            PM10: '23.00',
+                            PM2: '23.00'
+                        },
+                        {
+                            time: '05.18   18:00',
+                            temp: '28.45',
+                            humidity: '40.25',
+                            CO2: '654.21',
+                            PM10: '24.00',
+                            PM2: '24.00'
+                        },],
+                }
+            },
+            methods:{
+                timer(){
+                    setInterval(() => {
+                        let yy = new Date().getFullYear();
+                        let mm = new Date().getMonth() + 1;
+                        let dd = new Date().getDate();
+                        let hh = new Date().getHours();
+                        let mf = new Date().getMinutes() < 10 ? '0' + new Date().getMinutes() : new Date().getMinutes();
+                        let ss = new Date().getSeconds() < 10 ? '0' + new Date().getSeconds() : new Date().getSeconds();
+                        let arr = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+                        let day = new Date().getDay();
+                        this.year = yy + '年' + mm + '月' + dd + '日';
+                        this.time = hh + ':' + mf + ':' + ss;
+                        this.week = arr[day];
+                    }, 1000);
+                },
+                start() {
+                    let yy = new Date().getFullYear();
+                    let mm = new Date().getMonth() + 1;
+                    let dd = new Date().getDate();
+                    let hh = new Date().getHours();
+                    let mf = new Date().getMinutes() < 10 ? '0' + new Date().getMinutes() : new Date().getMinutes();
+                    let ss = new Date().getSeconds() < 10 ? '0' + new Date().getSeconds() : new Date().getSeconds();
+                    let arr = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+                    let day = new Date().getDay();
+                    this.year = yy + '年' + mm + '月' + dd + '日';
+                    this.time = hh + ':' + mf + ':' + ss;
+                    this.week = arr[day];
+                },
+                handleSelect(key) {
+                    if(key<=4){
+                        this.editableTabs[0].title='一年级'+'('+key+')'+'班'
+                        this.editableTabs[0].name=''
+                    }else if(key>4){
+                        this.editableTabs[0].title='二年级'+'('+(key-4)+')'+'班'
+                        this.editableTabs[0].name='key'
+                    }
+                    this.getData(key)
+                },
+                creatCharts(){
+                    var chartDom = document.getElementById('temp');
+                    var chartDom1 = document.getElementById('humidity');
+                    var chartDom2 = document.getElementById('CO2');
+                    var chartDom3 = document.getElementById('PM10');
+                    var chartDom4 = document.getElementById('PM2');
+                    var myChart = echarts.init(chartDom);
+                    var myChart2 = echarts.init(chartDom1);
+                    var myChart3 = echarts.init(chartDom2);
+                    var myChart4 = echarts.init(chartDom3);
+                    var myChart5 = echarts.init(chartDom4);
+                    this.getData(1)
+                },
+                getData(key){
+                    var chartDom = document.getElementById('temp');
+                    var chartDom1 = document.getElementById('humidity');
+                    var chartDom2 = document.getElementById('CO2');
+                    var chartDom3 = document.getElementById('PM10');
+                    var chartDom4 = document.getElementById('PM2');
+                    var myChart = echarts.init(chartDom);
+                    var myChart2 = echarts.init(chartDom1);
+                    var myChart3 = echarts.init(chartDom2);
+                    var myChart4 = echarts.init(chartDom3);
+                    var myChart5 = echarts.init(chartDom4);
+                    if(key < 10){
+                        key = "0" + key.toString();
+                    }
+                    axios.get("https://weixin.baierinfo.com/app/getEnvironData?sensornum=baier2106a010" + key + "&equipmentId=1")
+                        .then(response => {
+                            var allTemp = [];
+                            allTemp.push(response.data.list[0].sensorDate,response.data.list[1].sensorDate,response.data.list[2].sensorDate,response.data.list[3].sensorDate,response.data.list[4].sensorDate)
+                            console.log(allTemp);
+                            myChart.setOption({
+                                series: [{
+                                    min:0,
+                                    max:50,
+                                    type: 'gauge',
+                                    progress: {
+                                        show: true,
+                                        width: 10
+                                    },
+                                    axisLine: {
+                                        lineStyle: {
+                                            width: 10
+                                        }
+                                    },
+                                    axisTick: {
+                                        show: false
+                                    },
+                                    splitLine: {
+                                        length: 8,
+                                        lineStyle: {
+                                            width: 2,
+                                            color: '#999'
+                                        }
+                                    },
+                                    axisLabel: {
+                                        distance: 15,
+                                        color: '#FFF',
+                                        fontSize: 10
+                                    },
+                                    anchor: {
+                                        show: true,
+                                        showAbove: true,
+                                        size: 5,
+                                        itemStyle: {
+                                            borderWidth: 1
+                                        }
+                                    },
+                                    title: {
+                                        show: false
+                                    },
+                                    detail: {
+                                        valueAnimation: true,
+                                        fontSize: 20,
+                                        offsetCenter: [0, '70%'],
+                                        color:'#04FDF5'
+                                    },
+                                    data: [{
+                                        value: allTemp[0]
+                                    }]
+                                }]
+                            });
+                            myChart2.setOption({
+                                series: [{
+                                    min:0,
+                                    max:100,
+                                    type: 'gauge',
+                                    progress: {
+                                        show: true,
+                                        width: 10
+                                    },
+                                    axisLine: {
+                                        lineStyle: {
+                                            width: 10
+                                        }
+                                    },
+                                    axisTick: {
+                                        show: false
+                                    },
+                                    splitLine: {
+                                        length: 8,
+                                        lineStyle: {
+                                            width: 2,
+                                            color: '#999'
+                                        }
+                                    },
+                                    axisLabel: {
+                                        distance: 15,
+                                        color: '#FFF',
+                                        fontSize: 10
+                                    },
+                                    anchor: {
+                                        show: true,
+                                        showAbove: true,
+                                        size: 5,
+                                        itemStyle: {
+                                            borderWidth: 1
+                                        }
+                                    },
+                                    title: {
+                                        show: false
+                                    },
+                                    detail: {
+                                        valueAnimation: true,
+                                        fontSize: 20,
+                                        offsetCenter: [0, '70%'],
+                                        color:'#04FDF5'
+                                    },
+                                    data: [{
+                                        value: allTemp[1]
+                                    }]
+                                }]
+                            });
+                            myChart3.setOption({
+                                series: [{
+                                    min:0,
+                                    max:1000,
+                                    type: 'gauge',
+                                    progress: {
+                                        show: true,
+                                        width: 10
+                                    },
+                                    axisLine: {
+                                        lineStyle: {
+                                            width: 10
+                                        }
+                                    },
+                                    axisTick: {
+                                        show: false
+                                    },
+                                    splitLine: {
+                                        length: 8,
+                                        lineStyle: {
+                                            width: 2,
+                                            color: '#999'
+                                        }
+                                    },
+                                    axisLabel: {
+                                        distance: 15,
+                                        color: '#FFF',
+                                        fontSize: 10
+                                    },
+                                    anchor: {
+                                        show: true,
+                                        showAbove: true,
+                                        size: 5,
+                                        itemStyle: {
+                                            borderWidth: 1
+                                        }
+                                    },
+                                    title: {
+                                        show: false
+                                    },
+                                    detail: {
+                                        valueAnimation: true,
+                                        fontSize: 20,
+                                        offsetCenter: [0, '70%'],
+                                        color:'#04FDF5'
+                                    },
+                                    data: [{
+                                        value: allTemp[2]
+                                    }]
+                                }]
+                            });
+                            myChart4.setOption({
+                                series: [{
+                                    min:0,
+                                    max:50,
+                                    type: 'gauge',
+                                    progress: {
+                                        show: true,
+                                        width: 10
+                                    },
+                                    axisLine: {
+                                        lineStyle: {
+                                            width: 10
+                                        }
+                                    },
+                                    axisTick: {
+                                        show: false
+                                    },
+                                    splitLine: {
+                                        length: 8,
+                                        lineStyle: {
+                                            width: 2,
+                                            color: '#999'
+                                        }
+                                    },
+                                    axisLabel: {
+                                        distance: 15,
+                                        color: '#FFF',
+                                        fontSize: 10
+                                    },
+                                    anchor: {
+                                        show: true,
+                                        showAbove: true,
+                                        size: 5,
+                                        itemStyle: {
+                                            borderWidth: 1
+                                        }
+                                    },
+                                    title: {
+                                        show: false
+                                    },
+                                    detail: {
+                                        valueAnimation: true,
+                                        fontSize: 20,
+                                        offsetCenter: [0, '70%'],
+                                        color:'#04FDF5'
+                                    },
+                                    data: [{
+                                        value: allTemp[3]
+                                    }]
+                                }]
+                            });
+                            myChart5.setOption({
+                                series: [{
+                                    min:0,
+                                    max:50,
+                                    type: 'gauge',
+                                    progress: {
+                                        show: true,
+                                        width: 10
+                                    },
+                                    axisLine: {
+                                        lineStyle: {
+                                            width: 10
+                                        }
+                                    },
+                                    axisTick: {
+                                        show: false
+                                    },
+                                    splitLine: {
+                                        length: 8,
+                                        lineStyle: {
+                                            width: 2,
+                                            color: '#999'
+                                        }
+                                    },
+                                    axisLabel: {
+                                        distance: 15,
+                                        color: '#FFF',
+                                        fontSize: 10
+                                    },
+                                    anchor: {
+                                        show: true,
+                                        showAbove: true,
+                                        size: 5,
+                                        itemStyle: {
+                                            borderWidth: 1
+                                        }
+                                    },
+                                    title: {
+                                        show: false
+                                    },
+                                    detail: {
+                                        valueAnimation: true,
+                                        fontSize: 20,
+                                        offsetCenter: [0, '70%'],
+                                        color:'#04FDF5'
+                                    },
+                                    data: [{
+                                        value: allTemp[4]
+                                    }]
+                                }]
+                            });
+                        })
+                        .catch(function (error) {
+                            console.log(error);
+                        });
+                }
+            },
+            mounted(){
+                this.start();
+                this.timer();
+                this.creatCharts();
+            }
+        })
+    </script>
+</body>
+</html>
